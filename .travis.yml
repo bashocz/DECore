@@ -22,7 +22,7 @@ branches:
   only:
     - master
 before_install:  
-  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fiopenssl; fi
+  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
   - export LDFLAGS="$LDFLAGS -L/usr/local/opt/openssl/lib"
   - export CPPFLAGS="$CPPFLAGS -I/usr/local/opt/openssl/include"
   - chmod +x build.sh
@@ -31,4 +31,4 @@ install:
   - curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh | bash /dev/stdin --version "$CLI_VERSION" --install-dir "$DOTNET_INSTALL_DIR"
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"  
 script:  
-  - ./build.sh
+  - ./build.sh verify
