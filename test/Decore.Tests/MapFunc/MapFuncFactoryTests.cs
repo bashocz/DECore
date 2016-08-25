@@ -11,12 +11,21 @@ namespace Decore.MapFunc
     public class MapFuncFactoryTests
     {
         [Fact]
-        public void Ctor_NoArguments()
+        public void Default()
         {
             //Act
-            var sut = new MapFuncFactory();
+            var sut = MapFuncFactory.Default;
 
             //Assert
+            Assert.NotNull(sut);
+        }
+
+        public void Ctor_WithoutFuncStore()
+        {
+            //Act
+            var sut = new MapFuncFactory(null);
+
+            //Arrange
             Assert.NotNull(sut);
         }
 
@@ -31,15 +40,6 @@ namespace Decore.MapFunc
 
             //Arrange
             Assert.NotNull(sut);
-        }
-
-        public void Ctor_WithoutFuncStore()
-        {
-            //Act
-            Assert.Throws<ArgumentNullException>(() =>
-            {
-                var sut = new MapFuncFactory(null);
-            });
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace Decore.MapFunc
         public void DefaultFunc()
         {
             //Arrange
-            var sut = new MapFuncFactory();
+            var sut = new MapFuncFactory(null);
 
             //Assert
             Assert.Equal(0, sut.DefaultFunc<object, int>(null));
@@ -89,7 +89,7 @@ namespace Decore.MapFunc
         public void GetBuilder_NoFactoryMethod()
         {
             //Arrange
-            var sut = new MapFuncFactory();
+            var sut = new MapFuncFactory(null);
 
             //Act
             var builder = sut.GetBuilder();
@@ -118,7 +118,7 @@ namespace Decore.MapFunc
         public void BuildFunc_NoFactoryMethod()
         {
             //Arrange
-            var sut = new MapFuncFactory();
+            var sut = new MapFuncFactory(null);
 
             //Act
             var mapFunc = sut.BuildFunc<object, object>();
@@ -189,7 +189,7 @@ namespace Decore.MapFunc
         public void Get_NoFuncInStore()
         {
             //Arrange
-            var sut = new MapFuncFactory();
+            var sut = new MapFuncFactory(null);
 
             //Act
             var mapFunc = sut.Get<object, object>();

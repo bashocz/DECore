@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -9,17 +10,18 @@ namespace Decore.MapFunc
 {
     internal sealed class MapFuncFactory : IMapFuncFactory
     {
+        private static readonly Lazy<IMapFuncFactory> DefaultLazy = new Lazy<IMapFuncFactory>(() => new MapFuncFactory(), LazyThreadSafetyMode.ExecutionAndPublication);
+        public static IMapFuncFactory Default => DefaultLazy.Value;
+
         private readonly IDictionary<Tuple<Type, Type>, object> _funcStore;
         private readonly Func<IMapFuncBuilder> _builderFactoryMethod;
 
-        internal MapFuncFactory()
-            :this(new Dictionary<Tuple<Type, Type>, object>()) { }
+        private MapFuncFactory()
+            :this(null) { }
 
         internal MapFuncFactory(IDictionary<Tuple<Type, Type>, object> funcStore, Func<IMapFuncBuilder> builderFactoryMethod = null)
         {
-            if (funcStore == null)
-                throw new ArgumentNullException(nameof(funcStore));
-            _funcStore = funcStore;
+            _funcStore = funcStore ?? new Dictionary<Tuple<Type, Type>, object>();
             _builderFactoryMethod = builderFactoryMethod;
         }
 
