@@ -31,25 +31,25 @@ namespace Decore
         }
 
         [Fact]
-        public void Ctor_WithBuilder()
+        public void Ctor_WithFactory()
         {
             //Arrange
-            var builder = new Mock<IMapFuncBuilder>();
+            var factory = new Mock<IMapFuncFactory>();
 
             //Act
-            var mapper = new Mapper<InClass, OutClass>(builder.Object);
+            var mapper = new Mapper<InClass, OutClass>(factory.Object);
 
             //Assert
             Assert.NotNull(mapper);
         }
 
         [Fact]
-        public void Ctor_NoBuilder_DoNotCreate()
+        public void Ctor_NoFactory_DoNotCreate()
         {
             //Act
             Assert.Throws<ArgumentNullException>(() =>
             {
-                var mapper = new Mapper<InClass, OutClass>((IMapFuncBuilder)null);
+                var mapper = new Mapper<InClass, OutClass>((IMapFuncFactory)null);
             });
         }
 
@@ -69,14 +69,14 @@ namespace Decore
         }
 
         [Fact]
-        public void Map_ReturnsInstance_Ctor_WithBuilder()
+        public void Map_ReturnsInstance_Ctor_WithFactory()
         {
             //Arrange
             var outInstance = new OutClass();
             Func<InClass, OutClass> mapFunc = src => outInstance;
-            var builder = new Mock<IMapFuncBuilder>();
-            builder.Setup(m => m.CreateMapFunc<InClass, OutClass>()).Returns(mapFunc);
-            var mapper = new Mapper<InClass, OutClass>(builder.Object);
+            var factory = new Mock<IMapFuncFactory>();
+            factory.Setup(m => m.Get<InClass, OutClass>()).Returns(mapFunc);
+            var mapper = new Mapper<InClass, OutClass>(factory.Object);
 
             //Act
             var result = mapper.Map(null);

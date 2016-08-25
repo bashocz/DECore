@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Decore.MapFunc;
 
 namespace Decore
 {
     public class Mapper<TIn, TOut> : IMapper<TIn, TOut>
     {
         private Func<TIn, TOut> _mapFunc;
-        private readonly IMapFuncBuilder _builder;
+        private readonly IMapFuncFactory _factory;
 
         public Mapper(Func<TIn, TOut> mapFunc)
         {
@@ -17,14 +18,14 @@ namespace Decore
             _mapFunc = mapFunc;
         }
 
-        internal Mapper(IMapFuncBuilder builder)
+        internal Mapper(IMapFuncFactory factory)
         {
-            if (builder == null)
-                throw new ArgumentNullException(nameof(builder));
-            _builder = builder;
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+            _factory = factory;
         }
 
-        internal Func<TIn, TOut> MapFunc => _mapFunc ?? (_mapFunc = _builder.CreateMapFunc<TIn, TOut>());
+        internal Func<TIn, TOut> MapFunc => _mapFunc ?? (_mapFunc = _factory.Get<TIn, TOut>());
 
         public TOut Map(TIn source)
         {

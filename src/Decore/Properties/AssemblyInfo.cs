@@ -19,3 +19,4 @@ using System.Runtime.InteropServices;
 [assembly: Guid("d1ab3075-f89f-4689-a444-0fe254d7d07a")]
 
 [assembly: InternalsVisibleTo("Decore.Tests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
