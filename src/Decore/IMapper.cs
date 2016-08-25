@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 namespace Decore
 {
     public interface IMapper<in TIn, out TOut>
-        where TIn: class
-        where TOut : class, new()
     {
         TOut Map(TIn source);
+        IEnumerable<TOut> MapAll(IEnumerable<TIn> source);
     }
 }
