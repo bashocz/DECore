@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
+// ReSharper disable InconsistentlySynchronizedField
 
 namespace Decore.MapFunc
 {
@@ -13,15 +11,16 @@ namespace Decore.MapFunc
         private static readonly Lazy<IMapFuncFactory> DefaultLazy = new Lazy<IMapFuncFactory>(() => new MapFuncFactory(), LazyThreadSafetyMode.ExecutionAndPublication);
         public static IMapFuncFactory Default => DefaultLazy.Value;
 
-        private readonly IDictionary<Tuple<Type, Type>, object> _funcStore;
+        private readonly IDictionary<Tuple<Type, Type>, object> _funcStore = new ConcurrentDictionary<Tuple<Type, Type>, object>();
         private readonly Func<IMapFuncBuilder> _builderFactoryMethod;
+
+        private readonly object _lockGet = new object();
 
         private MapFuncFactory()
             :this(null) { }
 
-        internal MapFuncFactory(IDictionary<Tuple<Type, Type>, object> funcStore, Func<IMapFuncBuilder> builderFactoryMethod = null)
+        internal MapFuncFactory(Func<IMapFuncBuilder> builderFactoryMethod)
         {
-            _funcStore = funcStore ?? new Dictionary<Tuple<Type, Type>, object>();
             _builderFactoryMethod = builderFactoryMethod;
         }
 
@@ -31,9 +30,15 @@ namespace Decore.MapFunc
             if (_funcStore.ContainsKey(key))
                 return _funcStore[key] as Func<TIn, TOut>;
 
-            var func = BuildFunc<TIn, TOut>();
-            _funcStore.Add(key, func);
-            return func;
+            lock (_lockGet)
+            {
+                if (_funcStore.ContainsKey(key))
+                    return _funcStore[key] as Func<TIn, TOut>;
+
+                var func = BuildFunc<TIn, TOut>();
+                _funcStore.Add(key, func);
+                return func;
+            }
         }
 
         internal Func<TIn, TOut> BuildFunc<TIn, TOut>()

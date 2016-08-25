@@ -20,38 +20,15 @@ namespace Decore.MapFunc
             Assert.NotNull(sut);
         }
 
-        public void Ctor_WithoutFuncStore()
-        {
-            //Act
-            var sut = new MapFuncFactory(null);
-
-            //Arrange
-            Assert.NotNull(sut);
-        }
-
-        [Fact]
-        public void Ctor_WithFuncStore()
-        {
-            //Arrange
-            var funcStore = new Dictionary<Tuple<Type, Type>, object>();
-
-            //Act
-            var sut = new MapFuncFactory(funcStore);
-
-            //Arrange
-            Assert.NotNull(sut);
-        }
-
         [Fact]
         public void Ctor_WithBuilderFactoryMethod()
         {
             //Arrange
-            var funcStore = new Dictionary<Tuple<Type, Type>, object>();
             var mockBuilder = new Mock<IMapFuncBuilder>();
             Func<IMapFuncBuilder> factory = () => mockBuilder.Object;
 
             //Act
-            var sut = new MapFuncFactory(funcStore, factory);
+            var sut = new MapFuncFactory(factory);
 
             //Arrange
             Assert.NotNull(sut);
@@ -60,11 +37,8 @@ namespace Decore.MapFunc
         [Fact]
         public void Ctor_WithoutBuilderFactoryMethod()
         {
-            //Arrange
-            var funcStore = new Dictionary<Tuple<Type, Type>, object>();
-
             //Act
-            var sut = new MapFuncFactory(funcStore, null);
+            var sut = new MapFuncFactory(null);
 
             //Arrange
             Assert.NotNull(sut);
@@ -102,10 +76,9 @@ namespace Decore.MapFunc
         public void GetBuilder_WithFactoryMethod()
         {
             //Arrange
-            var funcStore = new Dictionary<Tuple<Type, Type>, object>();
             var mockBuilder = new Mock<IMapFuncBuilder>();
             Func<IMapFuncBuilder> factory = () => mockBuilder.Object;
-            var sut = new MapFuncFactory(funcStore, factory);
+            var sut = new MapFuncFactory(factory);
 
             //Act
             var builder = sut.GetBuilder();
@@ -132,11 +105,10 @@ namespace Decore.MapFunc
         {
             //Arrange
             Func<object, object> func = (src) => src;
-            var funcStore = new Dictionary<Tuple<Type, Type>, object>();
             var mockBuilder = new Mock<IMapFuncBuilder>();
             mockBuilder.Setup(m => m.Build<object, object>()).Returns(func);
             Func<IMapFuncBuilder> factory = () => mockBuilder.Object;
-            var sut = new MapFuncFactory(funcStore, factory);
+            var sut = new MapFuncFactory(factory);
 
             //Act
             var mapFunc = sut.BuildFunc<object, object>();
@@ -146,47 +118,51 @@ namespace Decore.MapFunc
         }
 
         [Fact]
-        public void Get_SingleFuncInStore()
+        public void Get_SingleFunc()
         {
             //Assert
             Func<object, object> func = (src) => src;
-            var funcStore = new Dictionary<Tuple<Type, Type>, object>
-            {
-                { new Tuple<Type, Type>(typeof(object), typeof(object)), func }
-            };
-            var sut = new MapFuncFactory(funcStore);
+            var mockBuilder = new Mock<IMapFuncBuilder>();
+            mockBuilder.Setup(m => m.Build<object, object>()).Returns(func);
+            Func<IMapFuncBuilder> factory = () => mockBuilder.Object;
+            var sut = new MapFuncFactory(factory);
 
             //Act
-            var result = sut.Get<object, object>();
+            var mapFunc1 = sut.Get<object, object>();
+            var mapFunc2 = sut.Get<object, object>();
 
             //Assert
-            Assert.Equal(func, result);
+            Assert.Equal(func, mapFunc1);
+            Assert.Equal(mapFunc1, mapFunc2);
         }
 
         [Fact]
-        public void Get_MultipleFuncInStore()
+        public void Get_MultipleFuncs()
         {
             //Assert
             Func<object, object> func1 = (src) => src;
             Func<int, int> func2 = (src) => src;
-            var funcStore = new Dictionary<Tuple<Type, Type>, object>
-            {
-                { new Tuple<Type, Type>(typeof(object), typeof(object)), func1 },
-                { new Tuple<Type, Type>(typeof(int), typeof(int)), func2 }
-            };
-            var sut = new MapFuncFactory(funcStore);
+            var mockBuilder = new Mock<IMapFuncBuilder>();
+            mockBuilder.Setup(m => m.Build<object, object>()).Returns(func1);
+            mockBuilder.Setup(m => m.Build<int, int>()).Returns(func2);
+            Func<IMapFuncBuilder> factory = () => mockBuilder.Object;
+            var sut = new MapFuncFactory(factory);
 
             //Act
-            var result1 = sut.Get<object, object>();
-            var result2 = sut.Get<int, int>();
+            var mapFunc11 = sut.Get<object, object>();
+            var mapFunc12 = sut.Get<int, int>();
+            var mapFunc21 = sut.Get<object, object>();
+            var mapFunc22 = sut.Get<int, int>();
 
             //Assert
-            Assert.Equal(func1, result1);
-            Assert.Equal(func2, result2);
+            Assert.Equal(func1, mapFunc11);
+            Assert.Equal(func2, mapFunc12);
+            Assert.Equal(mapFunc11, mapFunc21);
+            Assert.Equal(mapFunc12, mapFunc22);
         }
 
         [Fact]
-        public void Get_NoFuncInStore()
+        public void Get_NoFactory()
         {
             //Arrange
             var sut = new MapFuncFactory(null);
@@ -196,6 +172,37 @@ namespace Decore.MapFunc
 
             //Assert
             Assert.Equal(sut.DefaultFunc<object, object>, mapFunc);
+        }
+
+        [Fact]
+        public void Get_Concurent()
+        {
+            //Assert
+            var buildCount = 0;
+            Func<object, object> func = (src) => src;
+            var mockBuilder = new Mock<IMapFuncBuilder>();
+            mockBuilder.Setup(m => m.Build<object, object>()).Returns(() =>
+            {
+                buildCount++;
+                return func;
+            });
+            Func<IMapFuncBuilder> factory = () => mockBuilder.Object;
+            var sut = new MapFuncFactory(factory);
+
+            //Act
+            Task<Func<object, object>>[] tasks =
+            {
+                Task<Func<object, object>>.Factory.StartNew(() => sut.Get<object, object>()),
+                Task<Func<object, object>>.Factory.StartNew(() => sut.Get<object, object>()),
+                Task<Func<object, object>>.Factory.StartNew(() => sut.Get<object, object>()),
+            };
+            Task.WaitAll(tasks);
+
+            //Assert
+            Assert.Equal(1, buildCount);
+            Assert.NotNull(tasks[0].Result);
+            Assert.NotNull(tasks[1].Result);
+            Assert.NotNull(tasks[2].Result);
         }
 
         private class OutClass { }
