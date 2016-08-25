@@ -14,10 +14,10 @@ namespace Decore
             Func<InClass, OutClass> mapFunc = src => null;
 
             //Act
-            var mapper = new Mapper<InClass, OutClass>(mapFunc);
+            var sut = new Mapper<InClass, OutClass>(mapFunc);
 
             //Assert
-            Assert.NotNull(mapper);
+            Assert.NotNull(sut);
         }
 
         [Fact]
@@ -26,7 +26,7 @@ namespace Decore
             //Act
             Assert.Throws<ArgumentNullException>(() =>
             {
-                var mapper = new Mapper<InClass, OutClass>((Func<InClass, OutClass>)null);
+                var sut = new Mapper<InClass, OutClass>((Func<InClass, OutClass>)null);
             });
         }
 
@@ -34,13 +34,13 @@ namespace Decore
         public void Ctor_WithFactory()
         {
             //Arrange
-            var factory = new Mock<IMapFuncFactory>();
+            var mockFactory = new Mock<IMapFuncFactory>();
 
             //Act
-            var mapper = new Mapper<InClass, OutClass>(factory.Object);
+            var sut = new Mapper<InClass, OutClass>(mockFactory.Object);
 
             //Assert
-            Assert.NotNull(mapper);
+            Assert.NotNull(sut);
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace Decore
             //Act
             Assert.Throws<ArgumentNullException>(() =>
             {
-                var mapper = new Mapper<InClass, OutClass>((IMapFuncFactory)null);
+                var sut = new Mapper<InClass, OutClass>((IMapFuncFactory)null);
             });
         }
 
@@ -59,10 +59,10 @@ namespace Decore
             //Arrange
             var outInstance = new OutClass();
             Func<InClass, OutClass> mapFunc = src => outInstance;
-            var mapper = new Mapper<InClass, OutClass>(mapFunc);
+            var sut = new Mapper<InClass, OutClass>(mapFunc);
 
             //Act
-            var result = mapper.Map(null);
+            var result = sut.Map(null);
 
             //Assert
             Assert.Equal(outInstance, result);
@@ -74,12 +74,12 @@ namespace Decore
             //Arrange
             var outInstance = new OutClass();
             Func<InClass, OutClass> mapFunc = src => outInstance;
-            var factory = new Mock<IMapFuncFactory>();
-            factory.Setup(m => m.Get<InClass, OutClass>()).Returns(mapFunc);
-            var mapper = new Mapper<InClass, OutClass>(factory.Object);
+            var mockFactory = new Mock<IMapFuncFactory>();
+            mockFactory.Setup(m => m.Get<InClass, OutClass>()).Returns(mapFunc);
+            var sut = new Mapper<InClass, OutClass>(mockFactory.Object);
 
             //Act
-            var result = mapper.Map(null);
+            var result = sut.Map(null);
 
             //Assert
             Assert.Equal(outInstance, result);
@@ -91,10 +91,10 @@ namespace Decore
             //Arrange
             var outInstance = new OutClass();
             Func<InClass, OutClass> mapFunc = src => outInstance;
-            var mapper = new Mapper<InClass, OutClass>(mapFunc);
+            var sut = new Mapper<InClass, OutClass>(mapFunc);
 
             //Act
-            var result = mapper.MapAll(new InClass[0]).ToArray();
+            var result = sut.MapAll(new InClass[0]).ToArray();
 
             //Assert
             Assert.NotNull(result);
@@ -107,10 +107,10 @@ namespace Decore
             //Arrange
             var outInstance = new OutClass();
             Func<InClass, OutClass> mapFunc = src => outInstance;
-            var mapper = new Mapper<InClass, OutClass>(mapFunc);
+            var sut = new Mapper<InClass, OutClass>(mapFunc);
 
             //Act
-            var result = mapper.MapAll(new InClass[] { null }).ToArray();
+            var result = sut.MapAll(new InClass[] { null }).ToArray();
 
             //Assert
             Assert.NotNull(result);
@@ -129,10 +129,10 @@ namespace Decore
                     return outInstances[0];
                 return outInstances[1];
             };
-            var mapper = new Mapper<InClass, OutClass>(mapFunc);
+            var sut = new Mapper<InClass, OutClass>(mapFunc);
 
             //Act
-            var result = mapper.MapAll(new[] { null, new InClass(), null }).ToArray();
+            var result = sut.MapAll(new[] { null, new InClass(), null }).ToArray();
 
             //Assert
             Assert.NotNull(result);
@@ -142,7 +142,7 @@ namespace Decore
             Assert.Equal(outInstances[0], result[2]);
         }
 
-        class InClass { }
-        class OutClass { }
+        private class InClass { }
+        private class OutClass { }
     }
 }
