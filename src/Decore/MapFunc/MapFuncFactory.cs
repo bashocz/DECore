@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 // ReSharper disable InconsistentlySynchronizedField
 
@@ -50,6 +52,14 @@ namespace Decore.MapFunc
 
         internal IMapFuncBuilder DefaultBuilderFactoryMethod(Type tin, Type tout)
         {
+            if ((tin == null) || (tin == typeof(object)) || (tout == null) || (tout == typeof(object)))
+                return null;
+
+            var tinProps = tin.GetRuntimeProperties().ToArray();
+            var toutProps = tout.GetRuntimeProperties().ToArray();
+            if ((tinProps.Length > 0) && (toutProps.Length > 0))
+                return new C2CMapFuncBuilder();
+
             return null;
         }
 

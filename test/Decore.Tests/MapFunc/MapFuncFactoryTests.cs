@@ -66,10 +66,37 @@ namespace Decore.MapFunc
             var sut = new MapFuncFactory(null);
 
             //Act
-            var builder = sut.DefaultBuilderFactoryMethod(null, null);
+            var bld1 = sut.DefaultBuilderFactoryMethod(null, null);
+            var bld2 = sut.DefaultBuilderFactoryMethod(null, typeof(object));
+            var bld3 = sut.DefaultBuilderFactoryMethod(typeof(object), null);
+            var bld4 = sut.DefaultBuilderFactoryMethod(typeof(object), typeof(object));
+            var bld5 = sut.DefaultBuilderFactoryMethod(typeof(object), typeof(OutClass));
+            var bld6 = sut.DefaultBuilderFactoryMethod(typeof(InClass), typeof(object));
+            var bld7 = sut.DefaultBuilderFactoryMethod(null, typeof(OutClass));
+            var bld8 = sut.DefaultBuilderFactoryMethod(typeof(InClass), null);
 
             //Assert
-            Assert.Null(builder);
+            Assert.Null(bld1);
+            Assert.Null(bld2);
+            Assert.Null(bld3);
+            Assert.Null(bld4);
+            Assert.Null(bld5);
+            Assert.Null(bld6);
+            Assert.Null(bld7);
+            Assert.Null(bld8);
+        }
+
+        [Fact]
+        public void DefaultBuilderFactoryMethod_C2C()
+        {
+            //Arrange
+            var sut = new MapFuncFactory(null);
+
+            //Act
+            var bld1 = sut.DefaultBuilderFactoryMethod(typeof(InClass), typeof(OutClass));
+
+            //Assert
+            Assert.IsType(typeof(C2CMapFuncBuilder), bld1);
         }
 
         [Fact]
@@ -79,7 +106,7 @@ namespace Decore.MapFunc
             var sut = new MapFuncFactory(null);
 
             //Act
-            var mapFunc = sut.BuildFunc<object, object>(typeof(object), typeof(object));
+            var mapFunc = sut.BuildFunc<object, object>(null, null);
 
             //Assert
             Assert.Equal(sut.DefaultFunc<object, object>, mapFunc);
@@ -96,7 +123,7 @@ namespace Decore.MapFunc
             var sut = new MapFuncFactory(factory);
 
             //Act
-            var mapFunc = sut.BuildFunc<object, object>(typeof(object), typeof(object));
+            var mapFunc = sut.BuildFunc<object, object>(null, null);
 
             //Assert
             Assert.Equal(func, mapFunc);
@@ -190,6 +217,14 @@ namespace Decore.MapFunc
             Assert.NotNull(tasks[2].Result);
         }
 
-        private class OutClass { }
+        private class InClass
+        {
+            public int Prop { get; set; }
+        }
+
+        private class OutClass
+        {
+            public int Prop { get; set; }
+        }
     }
 }
