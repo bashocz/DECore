@@ -25,7 +25,7 @@ namespace Decore.MapFunc
         {
             //Arrange
             var mockBuilder = new Mock<IMapFuncBuilder>();
-            Func<IMapFuncBuilder> factory = () => mockBuilder.Object;
+            Func<Type, Type, IMapFuncBuilder> factory = (tin, tout) => mockBuilder.Object;
 
             //Act
             var sut = new MapFuncFactory(factory);
@@ -60,31 +60,16 @@ namespace Decore.MapFunc
         }
 
         [Fact]
-        public void GetBuilder_NoFactoryMethod()
+        public void DefaultBuilderFactoryMethod_Null()
         {
             //Arrange
             var sut = new MapFuncFactory(null);
 
             //Act
-            var builder = sut.GetBuilder();
+            var builder = sut.DefaultBuilderFactoryMethod(null, null);
 
             //Assert
             Assert.Null(builder);
-        }
-
-        [Fact]
-        public void GetBuilder_WithFactoryMethod()
-        {
-            //Arrange
-            var mockBuilder = new Mock<IMapFuncBuilder>();
-            Func<IMapFuncBuilder> factory = () => mockBuilder.Object;
-            var sut = new MapFuncFactory(factory);
-
-            //Act
-            var builder = sut.GetBuilder();
-
-            //Assert
-            Assert.Equal(mockBuilder.Object, builder);
         }
 
         [Fact]
@@ -94,7 +79,7 @@ namespace Decore.MapFunc
             var sut = new MapFuncFactory(null);
 
             //Act
-            var mapFunc = sut.BuildFunc<object, object>();
+            var mapFunc = sut.BuildFunc<object, object>(typeof(object), typeof(object));
 
             //Assert
             Assert.Equal(sut.DefaultFunc<object, object>, mapFunc);
@@ -107,11 +92,11 @@ namespace Decore.MapFunc
             Func<object, object> func = (src) => src;
             var mockBuilder = new Mock<IMapFuncBuilder>();
             mockBuilder.Setup(m => m.Build<object, object>()).Returns(func);
-            Func<IMapFuncBuilder> factory = () => mockBuilder.Object;
+            Func<Type, Type, IMapFuncBuilder> factory = (tin, tout) => mockBuilder.Object;
             var sut = new MapFuncFactory(factory);
 
             //Act
-            var mapFunc = sut.BuildFunc<object, object>();
+            var mapFunc = sut.BuildFunc<object, object>(typeof(object), typeof(object));
 
             //Assert
             Assert.Equal(func, mapFunc);
@@ -124,7 +109,7 @@ namespace Decore.MapFunc
             Func<object, object> func = (src) => src;
             var mockBuilder = new Mock<IMapFuncBuilder>();
             mockBuilder.Setup(m => m.Build<object, object>()).Returns(func);
-            Func<IMapFuncBuilder> factory = () => mockBuilder.Object;
+            Func<Type, Type, IMapFuncBuilder> factory = (tin, tout) => mockBuilder.Object;
             var sut = new MapFuncFactory(factory);
 
             //Act
@@ -145,7 +130,7 @@ namespace Decore.MapFunc
             var mockBuilder = new Mock<IMapFuncBuilder>();
             mockBuilder.Setup(m => m.Build<object, object>()).Returns(func1);
             mockBuilder.Setup(m => m.Build<int, int>()).Returns(func2);
-            Func<IMapFuncBuilder> factory = () => mockBuilder.Object;
+            Func<Type, Type, IMapFuncBuilder> factory = (tin, tout) => mockBuilder.Object;
             var sut = new MapFuncFactory(factory);
 
             //Act
@@ -186,7 +171,7 @@ namespace Decore.MapFunc
                 buildCount++;
                 return func;
             });
-            Func<IMapFuncBuilder> factory = () => mockBuilder.Object;
+            Func<Type, Type, IMapFuncBuilder> factory = (tin, tout) => mockBuilder.Object;
             var sut = new MapFuncFactory(factory);
 
             //Act
