@@ -55,17 +55,37 @@ namespace Decore.MapFunc
             if ((tin == null) || (tin == typeof(object)) || (tout == null) || (tout == typeof(object)))
                 return null;
 
-            var tinProps = tin.GetRuntimeProperties().ToArray();
-            var toutProps = tout.GetRuntimeProperties().ToArray();
-            if ((tinProps.Length > 0) && (toutProps.Length > 0))
-                return new C2CMapFuncBuilder();
+            var builderType = DetermineBuilderType(tin, tout);
+            switch (builderType)
+            {
+                case BuilderType.Complex2Complex:
+                    return new C2CMapFuncBuilder();
 
-            return null;
+                default:
+                    return null;
+            }
+        }
+
+        internal BuilderType DetermineBuilderType(Type tin, Type tout)
+        {
+            var tinInfo = tin.GetTypeInfo();
+            var toutInfo = tout.GetTypeInfo();
+
+            if (tinInfo.IsClass && toutInfo.IsClass)
+                return BuilderType.Complex2Complex;
+
+            return BuilderType.Unknown;
         }
 
         internal TOut DefaultFunc<TIn, TOut>(TIn source)
         {
             return default(TOut);
+        }
+
+        internal enum BuilderType
+        {
+            Unknown = 0,
+            Complex2Complex,
         }
     }
 }
